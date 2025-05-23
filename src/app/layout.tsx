@@ -1,13 +1,14 @@
 import type { Metadata } from 'next';
-import { GeistSans } from 'geist/font/sans'; // Corrected import from geist
+import { GeistSans } from 'geist/font/sans';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import Header from '@/components/layout/Header';
 
-const geistSans = GeistSans({
-  variable: '--font-geist-sans',
-  subsets: ['latin'],
-});
+// Removed incorrect GeistSans initialization:
+// const geistSans = GeistSans({
+//   variable: '--font-geist-sans',
+//   subsets: ['latin'],
+// });
 
 export const metadata: Metadata = {
   title: 'AgriClassify - AI Powered Produce Classification',
@@ -20,8 +21,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${geistSans.variable} font-sans antialiased flex flex-col min-h-screen`}>
+    <html lang="en" className={GeistSans.variable}>
+      {/*
+        The `font-sans` class is applied globally via globals.css.
+        GeistSans.variable on <html> provides the CSS custom property --font-geist-sans.
+        Tailwind's `font-sans` utility is configured in tailwind.config.ts to use this variable.
+      */}
+      <body className="antialiased flex flex-col min-h-screen">
         <Header />
         <main className="flex-grow container mx-auto px-4 py-8">
           {children}
