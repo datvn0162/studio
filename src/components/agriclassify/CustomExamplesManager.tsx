@@ -43,12 +43,12 @@ export default function CustomExamplesManager({
       const filesArray = Array.from(event.target.files);
       if (filesArray.length > 10) {
         toast({
-          title: 'Too many images',
-          description: 'You can select a maximum of 10 images per custom type.',
+          title: 'Quá nhiều ảnh',
+          description: 'Bạn có thể chọn tối đa 10 ảnh cho mỗi loại tùy chỉnh.',
           variant: 'destructive',
         });
         setNewImageFiles(filesArray.slice(0, 10));
-         if (fileInputRef.current) { // Reset to show only 10 if more were selected
+         if (fileInputRef.current) { 
             const dataTransfer = new DataTransfer();
             filesArray.slice(0, 10).forEach(file => dataTransfer.items.add(file));
             fileInputRef.current.files = dataTransfer.files;
@@ -61,15 +61,15 @@ export default function CustomExamplesManager({
 
   const handleAddCustomType = async () => {
     if (!newLabel.trim()) {
-      toast({ title: 'Label Required', description: 'Please enter a label for the custom type.', variant: 'destructive' });
+      toast({ title: 'Yêu cầu nhãn', description: 'Vui lòng nhập nhãn cho loại tùy chỉnh.', variant: 'destructive' });
       return;
     }
     if (newImageFiles.length === 0) {
-      toast({ title: 'Images Required', description: 'Please select at least one image for the custom type.', variant: 'destructive' });
+      toast({ title: 'Yêu cầu ảnh', description: 'Vui lòng chọn ít nhất một ảnh cho loại tùy chỉnh.', variant: 'destructive' });
       return;
     }
     if (customExamples.some(ex => ex.label.toLowerCase() === newLabel.trim().toLowerCase())) {
-      toast({ title: 'Label Exists', description: 'A custom type with this label already exists.', variant: 'destructive' });
+      toast({ title: 'Nhãn đã tồn tại', description: 'Một loại tùy chỉnh với nhãn này đã tồn tại.', variant: 'destructive' });
       return;
     }
 
@@ -80,21 +80,21 @@ export default function CustomExamplesManager({
         exampleImageUris: imageUris,
       };
       onCustomExamplesChange([...customExamples, newExample]);
-      toast({ title: 'Custom Type Added', description: `"${newExample.label}" has been added with ${newExample.exampleImageUris.length} image(s).` });
+      toast({ title: 'Đã thêm loại tùy chỉnh', description: `"${newExample.label}" đã được thêm với ${newExample.exampleImageUris.length} ảnh.` });
       setNewLabel('');
       setNewImageFiles([]);
       if (fileInputRef.current) {
-        fileInputRef.current.value = ''; // Clear the file input
+        fileInputRef.current.value = ''; 
       }
     } catch (error) {
-      console.error("Error adding custom type:", error);
-      toast({ title: 'Error Adding Type', description: 'Could not process images. Please try again.', variant: 'destructive' });
+      console.error("Lỗi khi thêm loại tùy chỉnh:", error);
+      toast({ title: 'Lỗi thêm loại', description: 'Không thể xử lý ảnh. Vui lòng thử lại.', variant: 'destructive' });
     }
   };
 
   const handleRemoveCustomType = (labelToRemove: string) => {
     onCustomExamplesChange(customExamples.filter(ex => ex.label !== labelToRemove));
-    toast({ title: 'Custom Type Removed', description: `"${labelToRemove}" has been removed.` });
+    toast({ title: 'Đã xóa loại tùy chỉnh', description: `"${labelToRemove}" đã được xóa.` });
   };
 
   const handleRemoveImageFromExample = (label: string, imageUriToRemove: string) => {
@@ -108,31 +108,31 @@ export default function CustomExamplesManager({
         }
         return ex;
       })
-      .filter(ex => ex.exampleImageUris.length > 0); // Remove type if it has no images left
+      .filter(ex => ex.exampleImageUris.length > 0); 
 
     onCustomExamplesChange(updatedExamples);
-    toast({ title: 'Image Removed', description: `An image has been removed from "${label}".` });
+    toast({ title: 'Đã xóa ảnh', description: `Một ảnh đã được xóa khỏi "${label}".` });
   };
 
   return (
     <Card className="w-full shadow-lg mt-8">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <PlusCircle className="text-primary" /> Define Custom Produce Types
+          <PlusCircle className="text-primary" /> Định nghĩa các loại nông sản tùy chỉnh
         </CardTitle>
         <CardDescription>
-          Optionally provide your own examples to help the AI classify specific produce types. 
-          Each type needs a unique label and 1-10 example images (JPG, PNG).
+          Tùy chọn cung cấp các ví dụ của riêng bạn để giúp AI phân loại các loại nông sản cụ thể.
+          Mỗi loại cần một nhãn duy nhất và 1-10 ảnh ví dụ (JPG, PNG).
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="space-y-4 p-4 border rounded-md bg-muted/30">
-          <h3 className="text-lg font-medium">Add New Custom Type</h3>
+          <h3 className="text-lg font-medium">Thêm loại tùy chỉnh mới</h3>
           <div className="space-y-2">
-            <label htmlFor="custom-type-label" className="block text-sm font-medium text-foreground">Produce Label</label>
+            <label htmlFor="custom-type-label" className="block text-sm font-medium text-foreground">Nhãn nông sản</label>
             <Input
               id="custom-type-label"
-              placeholder="e.g., Organic Fuji Apple, My Special Tomatoes"
+              placeholder="VD: Xoài Cát Chu loại 1, Cà chua đặc biệt"
               value={newLabel}
               onChange={(e) => setNewLabel(e.target.value)}
               disabled={isProcessing}
@@ -141,7 +141,7 @@ export default function CustomExamplesManager({
           </div>
           <div className="space-y-2">
             <label htmlFor="custom-type-images" className="block text-sm font-medium text-foreground">
-              Example Images ({newImageFiles.length} selected, max 10)
+              Ảnh ví dụ ({newImageFiles.length} đã chọn, tối đa 10)
             </label>
             <Input
               id="custom-type-images"
@@ -159,17 +159,11 @@ export default function CustomExamplesManager({
               {newImageFiles.map((file, index) => (
                 <div key={index} className="relative aspect-square group">
                   <NextImage
-                    src={URL.createObjectURL(file)} // Create temporary URL for preview
-                    alt={`Preview ${file.name}`}
+                    src={URL.createObjectURL(file)} 
+                    alt={`Xem trước ${file.name}`}
                     fill
                     sizes="100px"
                     className="rounded-md object-cover shadow-sm"
-                    onLoad={(e) => {
-                      // Revoke object URL after image loads to free memory for previews,
-                      // but be careful if this causes issues with re-renders.
-                      // For a short-lived preview list, this might be okay.
-                      // URL.revokeObjectURL((e.target as HTMLImageElement).src);
-                    }}
                     data-ai-hint="custom example preview"
                   />
                 </div>
@@ -177,13 +171,13 @@ export default function CustomExamplesManager({
             </div>
           )}
           <Button onClick={handleAddCustomType} disabled={isProcessing || !newLabel.trim() || newImageFiles.length === 0}>
-            <PlusCircle className="mr-2 h-4 w-4" /> Add Custom Type
+            <PlusCircle className="mr-2 h-4 w-4" /> Thêm loại tùy chỉnh
           </Button>
         </div>
 
         {customExamples.length > 0 && (
           <div className="space-y-4">
-            <h3 className="text-lg font-medium">Currently Defined Custom Types ({customExamples.length})</h3>
+            <h3 className="text-lg font-medium">Các loại tùy chỉnh hiện tại ({customExamples.length})</h3>
             <div className="space-y-6">
               {customExamples.map((example) => (
                 <Card key={example.label} className="bg-card shadow-md">
@@ -194,7 +188,7 @@ export default function CustomExamplesManager({
                       size="icon"
                       onClick={() => handleRemoveCustomType(example.label)}
                       disabled={isProcessing}
-                      aria-label={`Remove custom type ${example.label}`}
+                      aria-label={`Xóa loại tùy chỉnh ${example.label}`}
                       className="text-destructive hover:bg-destructive/10"
                     >
                       <Trash2 className="h-5 w-5" />
@@ -207,7 +201,7 @@ export default function CustomExamplesManager({
                           <div key={index} className="relative group aspect-square">
                             <NextImage
                               src={uri}
-                              alt={`${example.label} example ${index + 1}`}
+                              alt={`${example.label} ví dụ ${index + 1}`}
                               fill
                               sizes="150px"
                               className="rounded-md object-cover border"
@@ -219,7 +213,7 @@ export default function CustomExamplesManager({
                               className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity bg-destructive/80 hover:bg-destructive"
                               onClick={() => handleRemoveImageFromExample(example.label, uri)}
                               disabled={isProcessing}
-                              aria-label="Remove image from custom type"
+                              aria-label="Xóa ảnh khỏi loại tùy chỉnh"
                             >
                               <XCircle className="h-4 w-4" />
                             </Button>
@@ -227,7 +221,7 @@ export default function CustomExamplesManager({
                         ))}
                       </div>
                     ) : (
-                      <p className="text-sm text-muted-foreground">No images for this type (will be removed if not updated).</p>
+                      <p className="text-sm text-muted-foreground">Không có ảnh cho loại này (sẽ bị xóa nếu không cập nhật).</p>
                     )}
                   </CardContent>
                 </Card>
@@ -238,9 +232,8 @@ export default function CustomExamplesManager({
          {customExamples.length === 0 && (
             <Alert variant="default" className="border-primary/30 bg-primary/5">
               <ImageIcon className="h-5 w-5 text-primary" />
-              {/* <AlertTitle>No Custom Types Defined</AlertTitle> */}
               <AlertDescription className="text-foreground/80">
-                You haven't defined any custom produce types yet. Adding examples can help the AI better recognize specific varieties you work with.
+                Bạn chưa định nghĩa loại nông sản tùy chỉnh nào. Việc thêm ví dụ có thể giúp AI nhận diện tốt hơn các giống cụ thể mà bạn làm việc.
               </AlertDescription>
             </Alert>
         )}
@@ -250,7 +243,7 @@ export default function CustomExamplesManager({
             <Alert variant="default" className="w-full border-accent/30 bg-accent/5 text-accent-foreground">
               <AlertTriangle className="h-5 w-5 text-accent" />
               <AlertDescription className="text-foreground/80">
-                Custom examples are used for the current session to guide classification. They are not permanently stored or used for retraining the base AI model.
+                Các ví dụ tùy chỉnh được sử dụng cho phiên làm việc hiện tại để hướng dẫn phân loại. Chúng không được lưu trữ vĩnh viễn hoặc dùng để huấn luyện lại mô hình AI cơ sở.
               </AlertDescription>
             </Alert>
          </CardFooter>

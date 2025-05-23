@@ -28,12 +28,12 @@ export default function ResultsDisplay({ results, summary, summaryError, isSumma
       <Card className="mt-8 w-full shadow-lg">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-muted-foreground">
-            <Info className="text-primary"/> Classification Results
+            <Info className="text-primary"/> Kết quả phân loại
           </CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-center text-muted-foreground py-8">
-            Upload images to see classification results here.
+            Tải ảnh lên để xem kết quả phân loại tại đây.
           </p>
         </CardContent>
       </Card>
@@ -48,15 +48,15 @@ export default function ResultsDisplay({ results, summary, summaryError, isSumma
         <Card className="shadow-lg">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <ListChecks className="text-primary" /> Batch Summary
+              <ListChecks className="text-primary" /> Tóm tắt hàng loạt
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {isSummarizing && <p className="text-muted-foreground italic">Generating summary...</p>}
+            {isSummarizing && <p className="text-muted-foreground italic">Đang tạo tóm tắt...</p>}
             {summaryError && !isSummarizing && (
               <p className="text-destructive">
                 <AlertCircle className="inline mr-2 h-4 w-4" /> 
-                Error generating summary: {summaryError}
+                Lỗi tạo tóm tắt: {summaryError}
               </p>
             )}
             {summary && !isSummarizing && <p className="text-foreground whitespace-pre-wrap">{summary}</p>}
@@ -67,7 +67,7 @@ export default function ResultsDisplay({ results, summary, summaryError, isSumma
       <Card className="shadow-lg">
          <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <CheckSquare className="text-primary"/> Individual Classifications
+            <CheckSquare className="text-primary"/> Phân loại từng ảnh
           </CardTitle>
         </CardHeader>
         <CardContent>

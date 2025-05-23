@@ -78,7 +78,7 @@ export default function AgriClassifyPage() {
 
   const triggerClassification = useCallback(async () => {
     if (selectedFiles.length === 0) {
-      toast({ title: "No Images Selected", description: "Please select images to classify.", variant: "destructive" });
+      toast({ title: "Chưa chọn ảnh", description: "Vui lòng chọn ảnh để phân loại.", variant: "destructive" });
       return;
     }
 
@@ -97,7 +97,6 @@ export default function AgriClassifyPage() {
         const requestPayload: ClassificationRequest = {
           photoDataUri,
           fileId: file.id,
-          // Pass custom examples if they exist
           customExamples: customExamples.length > 0 ? customExamples : undefined,
         };
         
@@ -113,15 +112,15 @@ export default function AgriClassifyPage() {
           } : r)
         );
         if (response.error) {
-           toast({ title: `Error classifying ${file.name}`, description: response.error, variant: "destructive" });
+           toast({ title: `Lỗi phân loại ${file.name}`, description: response.error, variant: "destructive" });
         }
         return response;
       } catch (error: any) {
-        const errorMessage = error.message || "Failed to read or process file.";
+        const errorMessage = error.message || "Không thể đọc hoặc xử lý tệp.";
         setClassificationResults(prev =>
           prev.map(r => r.id === file.id ? { ...r, error: errorMessage, isLoading: false } : r)
         );
-        toast({ title: `Error processing ${file.name}`, description: errorMessage, variant: "destructive" });
+        toast({ title: `Lỗi xử lý ${file.name}`, description: errorMessage, variant: "destructive" });
         return { fileId: file.id, error: errorMessage };
       }
     });
@@ -141,21 +140,21 @@ export default function AgriClassifyPage() {
         const summaryResponse = await summarizeResultsAction(successfulClassifications);
         if (summaryResponse.summary) {
           setOverallSummary(summaryResponse.summary);
-          toast({ title: "Batch Summary Generated", description: "Classification summary is available." });
+          toast({ title: "Đã tạo tóm tắt hàng loạt", description: "Tóm tắt phân loại đã có." });
         }
         if (summaryResponse.error) {
           setSummaryError(summaryResponse.error);
-          toast({ title: "Summary Error", description: summaryResponse.error, variant: "destructive" });
+          toast({ title: "Lỗi tóm tắt", description: summaryResponse.error, variant: "destructive" });
         }
       } catch (error: any) {
-        const summaryErr = error.message || "Failed to generate summary.";
+        const summaryErr = error.message || "Không thể tạo tóm tắt.";
         setSummaryError(summaryErr);
-        toast({ title: "Summary Generation Failed", description: summaryErr, variant: "destructive" });
+        toast({ title: "Tạo tóm tắt thất bại", description: summaryErr, variant: "destructive" });
       } finally {
         setIsSummarizing(false);
       }
     } else if (selectedFiles.length > 1 && successfulClassifications.length <= 1) {
-        setSummaryError("Not enough successful classifications to generate a meaningful batch summary.");
+        setSummaryError("Không đủ kết quả phân loại thành công để tạo tóm tắt hàng loạt có ý nghĩa.");
     }
     
     const anyStillLoading = classificationResults.some(r => r.isLoading);
@@ -165,23 +164,23 @@ export default function AgriClassifyPage() {
 
     const allFailed = individualResults.every(res => res.error);
     if (selectedFiles.length > 0 && allFailed) {
-        toast({ title: "All Classifications Failed", description: "Please check the images or try again later.", variant: "destructive" });
+        toast({ title: "Tất cả phân loại đều thất bại", description: "Vui lòng kiểm tra lại ảnh hoặc thử lại sau.", variant: "destructive" });
     } else if (selectedFiles.length > 0 && !allFailed && individualResults.some(res => !res.error)) {
-        toast({ title: "Classification Complete", description: "Results are displayed below." });
+        toast({ title: "Phân loại hoàn tất", description: "Kết quả được hiển thị bên dưới." });
     }
 
-  }, [selectedFiles, toast, customExamples, classificationResults]); // Added customExamples & classificationResults to dependency array
+  }, [selectedFiles, toast, customExamples, classificationResults]);
 
 
   return (
     <div className="space-y-8">
       <Alert className="bg-primary/10 border-primary/30 text-primary-foreground shadow">
         <Terminal className="h-5 w-5 text-primary" />
-        <AlertTitle className="font-semibold text-primary">Welcome to AgriClassify!</AlertTitle>
+        <AlertTitle className="font-semibold text-primary">Chào mừng đến với AgriClassify!</AlertTitle>
         <AlertDescription className="text-foreground/80">
-          Leverage the power of AI to automatically classify your agricultural produce. 
-          Simply upload images and let our system identify them for you. 
-          Optionally, define custom produce types with example images to guide the AI for more specific classifications.
+          Khai thác sức mạnh của AI để tự động phân loại nông sản của bạn.
+          Chỉ cần tải lên hình ảnh và để hệ thống của chúng tôi nhận diện chúng.
+          Bạn cũng có thể tùy chọn định nghĩa các loại nông sản tùy chỉnh với hình ảnh ví dụ để hướng dẫn AI phân loại cụ thể hơn.
         </AlertDescription>
       </Alert>
 

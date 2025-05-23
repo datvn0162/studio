@@ -34,7 +34,7 @@ export default function ClassificationResultCard({
           {isLoading ? (
              <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/80 z-10">
                 <Loader2 className="h-12 w-12 text-primary animate-spin mb-2" />
-                <p className="text-sm text-foreground">Classifying...</p>
+                <p className="text-sm text-foreground">Đang phân loại...</p>
               </div>
           ) : null}
           <Image
@@ -55,7 +55,7 @@ export default function ClassificationResultCard({
         {error && !isLoading && (
           <Alert variant="destructive" className="mt-2">
             <AlertTriangle className="h-4 w-4" />
-            <AlertTitle>Classification Error</AlertTitle>
+            <AlertTitle>Lỗi phân loại</AlertTitle>
             <AlertDescription className="text-xs">{error}</AlertDescription>
           </Alert>
         )}
@@ -69,10 +69,10 @@ export default function ClassificationResultCard({
              {confidenceScore !== undefined && (
               <div>
                 <div className="flex justify-between text-sm text-muted-foreground mb-1">
-                  <span>Confidence</span>
+                  <span>Độ tin cậy</span>
                   <span>{displayConfidence}%</span>
                 </div>
-                <Progress value={displayConfidence} aria-label={`Confidence: ${displayConfidence}%`} className="h-2 [&>div]:bg-primary" />
+                <Progress value={displayConfidence} aria-label={`Độ tin cậy: ${displayConfidence}%`} className="h-2 [&>div]:bg-primary" />
               </div>
             )}
           </div>
@@ -81,7 +81,7 @@ export default function ClassificationResultCard({
         {!error && !isLoading && !productName && (
            <div className="text-center py-4 text-muted-foreground">
             <ImageIcon className="mx-auto h-8 w-8 mb-2" />
-            <p>Awaiting classification.</p>
+            <p>Chờ phân loại.</p>
           </div>
         )}
       </CardContent>
@@ -89,20 +89,20 @@ export default function ClassificationResultCard({
         {isLoading ? (
           <Badge variant="outline" className="bg-transparent border-accent text-accent">
             <Loader2 className="mr-1 h-3 w-3 animate-spin" />
-            Processing
+            Đang xử lý
           </Badge>
         ) : error ? (
           <Badge variant="destructive">
             <AlertTriangle className="mr-1 h-3 w-3" />
-            Failed
+            Thất bại
           </Badge>
         ) : productName ? (
           <Badge variant="default" className="bg-primary text-primary-foreground">
             <CheckCircle2 className="mr-1 h-3 w-3" />
-            Classified
+            Đã phân loại
           </Badge>
         ) : (
-           <Badge variant="outline">Pending</Badge>
+           <Badge variant="outline">Đang chờ</Badge>
         )}
       </CardFooter>
     </Card>

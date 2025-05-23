@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { UploadCloud, XCircle, Image as ImageIcon } from 'lucide-react';
-import NextImage from 'next/image'; // Renamed to avoid conflict with ImageIcon
+import NextImage from 'next/image'; 
 
 export interface ImageFileWithPreview extends File {
   id: string;
@@ -35,7 +35,7 @@ export default function ImageUploader({
     const files = event.target.files;
     if (files) {
       const newImageFiles: ImageFileWithPreview[] = Array.from(files)
-        .filter(file => file.type.startsWith('image/')) // Basic client-side validation
+        .filter(file => file.type.startsWith('image/')) 
         .map(file => {
           const id = `${file.name}-${file.lastModified}-${file.size}`;
           return Object.assign(file, { id, preview: URL.createObjectURL(file) });
@@ -46,12 +46,11 @@ export default function ImageUploader({
   
   useEffect(() => {
     onFilesSelected(currentFiles);
-    // Cleanup preview URLs
     return () => {
-      currentFiles.forEach(file => URL.revokeObjectURL(file.preview));
+      // currentFiles.forEach(file => URL.revokeObjectURL(file.preview)); // This causes issues when removing single files. Let page.tsx handle global cleanup.
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentFiles]); // onFilesSelected should be stable if defined in parent with useCallback
+  }, [currentFiles]); 
 
   const handleDrop = useCallback((event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
@@ -86,17 +85,17 @@ export default function ImageUploader({
   const clearAllFiles = () => {
     currentFiles.forEach(file => URL.revokeObjectURL(file.preview));
     setCurrentFiles([]);
-    onClearFiles(); // Notify parent
+    onClearFiles();
   };
 
   return (
     <Card className="w-full shadow-xl">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <UploadCloud className="text-primary" /> Upload Produce Images
+          <UploadCloud className="text-primary" /> Tải lên ảnh nông sản
         </CardTitle>
         <CardDescription>
-          Select one or more images (JPG, PNG) of agricultural products for classification.
+          Chọn một hoặc nhiều ảnh (JPG, PNG) của nông sản để phân loại.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -122,15 +121,15 @@ export default function ImageUploader({
           >
             <UploadCloud className={`h-12 w-12 ${dragActive ? 'text-primary' : 'text-muted-foreground'}`} />
             <p className="text-muted-foreground">
-              <span className="font-semibold text-primary">Click to upload</span> or drag and drop
+              <span className="font-semibold text-primary">Nhấn để tải lên</span> hoặc kéo thả
             </p>
-            <p className="text-xs text-muted-foreground">PNG, JPG up to 10MB</p>
+            <p className="text-xs text-muted-foreground">PNG, JPG tối đa 10MB</p>
           </label>
         </div>
 
         {currentFiles.length > 0 && (
           <div className="space-y-4">
-            <h3 className="text-lg font-medium">Selected Images ({currentFiles.length}):</h3>
+            <h3 className="text-lg font-medium">Ảnh đã chọn ({currentFiles.length}):</h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 max-h-96 overflow-y-auto p-2 rounded-md border">
               {currentFiles.map((file) => (
                 <div key={file.id} className="relative group aspect-square">
@@ -147,7 +146,7 @@ export default function ImageUploader({
                     size="icon"
                     className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity bg-destructive/80 hover:bg-destructive"
                     onClick={() => removeFile(file.id)}
-                    aria-label="Remove image"
+                    aria-label="Xóa ảnh"
                   >
                     <XCircle className="h-4 w-4" />
                   </Button>
@@ -158,7 +157,7 @@ export default function ImageUploader({
               ))}
             </div>
              <Button variant="outline" onClick={clearAllFiles} disabled={isProcessing}>
-              Clear All Images
+              Xóa tất cả ảnh
             </Button>
           </div>
         )}
@@ -170,7 +169,7 @@ export default function ImageUploader({
             size="lg"
             className="bg-primary hover:bg-primary/90 text-primary-foreground"
           >
-            {isProcessing ? 'Processing...' : `Classify ${selectedFileCount > 0 ? selectedFileCount : ''} Image${selectedFileCount !== 1 ? 's' : ''}`}
+            {isProcessing ? 'Đang xử lý...' : `Phân loại ${selectedFileCount > 0 ? selectedFileCount : ''} ảnh`}
             {isProcessing && <UploadCloud className="ml-2 h-5 w-5 animate-pulse" />}
           </Button>
         </div>

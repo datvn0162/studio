@@ -4,15 +4,9 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import Header from '@/components/layout/Header';
 
-// Removed incorrect GeistSans initialization:
-// const geistSans = GeistSans({
-//   variable: '--font-geist-sans',
-//   subsets: ['latin'],
-// });
-
 export const metadata: Metadata = {
-  title: 'AgriClassify - AI Powered Produce Classification',
-  description: 'Upload images of agricultural products for AI-driven classification and analysis.',
+  title: 'AgriClassify - Phân loại nông sản bằng AI',
+  description: 'Tải lên hình ảnh nông sản để được phân loại và phân tích bởi AI.',
 };
 
 export default function RootLayout({
@@ -21,12 +15,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={GeistSans.variable}>
-      {/*
-        The `font-sans` class is applied globally via globals.css.
-        GeistSans.variable on <html> provides the CSS custom property --font-geist-sans.
-        Tailwind's `font-sans` utility is configured in tailwind.config.ts to use this variable.
-      */}
+    <html lang="vi" className={GeistSans.variable}>
       <body className="antialiased flex flex-col min-h-screen">
         <Header />
         <main className="flex-grow container mx-auto px-4 py-8">
@@ -34,7 +23,7 @@ export default function RootLayout({
         </main>
         <Toaster />
         <footer className="py-6 text-center text-muted-foreground text-sm">
-          © {new Date().getFullYear()} AgriClassify. AI for a greener future.
+          © {new Date().getFullYear()} AgriClassify. AI cho một tương lai xanh hơn.
         </footer>
       </body>
     </html>
