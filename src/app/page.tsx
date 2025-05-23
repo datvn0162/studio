@@ -1,9 +1,12 @@
+
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
 import ImageUploader, { type ImageFileWithPreview } from '@/components/agriclassify/ImageUploader';
 import ResultsDisplay, { type ClassificationDisplayResult } from '@/components/agriclassify/ResultsDisplay';
-import { classifyImageAction, summarizeResultsAction, type ClassificationResponse } from './actions';
+import CustomExamplesManager from '@/components/agriclassify/CustomExamplesManager';
+import { classifyImageAction, summarizeResultsAction, type ClassificationResponse, type ClassificationRequest } from './actions';
+import type { CustomExample } from '@/ai/flows/classify-produce-image';
 import type { ClassificationResult as AIClassificationResult } from '@/ai/flows/summarize-classification-results';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -26,35 +29,37 @@ export default function AgriClassifyPage() {
   const [summaryError, setSummaryError] = useState<string | null>(null);
   const [isProcessingAny, setIsProcessingAny] = useState(false);
   const [isSummarizing, setIsSummarizing] = useState(false);
+  const [customExamples, setCustomExamples] = useState<CustomExample[]>([]);
 
   const { toast } = useToast();
 
   // Effect to revokeObjectURLs on unmount or when selectedFiles change
   useEffect(() => {
+    const currentPreviews = selectedFiles.map(f => f.preview);
     return () => {
-      selectedFiles.forEach(file => URL.revokeObjectURL(file.preview));
+      currentPreviews.forEach(previewUrl => URL.revokeObjectURL(previewUrl));
     };
   }, [selectedFiles]);
 
   const handleFilesSelected = useCallback((files: ImageFileWithPreview[]) => {
     // Revoke URLs for files that are no longer in the selection
+    const newFileIds = new Set(files.map(f => f.id));
     selectedFiles.forEach(existingFile => {
-      if (!files.find(newFile => newFile.id === existingFile.id)) {
+      if (!newFileIds.has(existingFile.id)) {
         URL.revokeObjectURL(existingFile.preview);
       }
     });
     
     setSelectedFiles(files);
-    // Initialize/update classificationResults based on new selection
     setClassificationResults(files.map(file => ({
       id: file.id,
       previewUrl: file.preview,
       fileName: file.name,
       isLoading: false,
     })));
-    setOverallSummary(null); // Clear previous summary
+    setOverallSummary(null);
     setSummaryError(null);
-  }, [selectedFiles]); // Include selectedFiles to properly manage URL revocation
+  }, [selectedFiles]);
 
   const handleClearFiles = useCallback(() => {
     selectedFiles.forEach(file => URL.revokeObjectURL(file.preview));
@@ -65,6 +70,10 @@ export default function AgriClassifyPage() {
     setIsProcessingAny(false);
     setIsSummarizing(false);
   }, [selectedFiles]);
+
+  const handleCustomExamplesChange = useCallback((updatedExamples: CustomExample[]) => {
+    setCustomExamples(updatedExamples);
+  }, []);
 
 
   const triggerClassification = useCallback(async () => {
@@ -77,7 +86,6 @@ export default function AgriClassifyPage() {
     setOverallSummary(null);
     setSummaryError(null);
 
-    // Set all to loading initially
     setClassificationResults(prevResults =>
       prevResults.map(r => ({ ...r, isLoading: true, error: undefined, productName: undefined, confidenceScore: undefined }))
     );
@@ -85,9 +93,16 @@ export default function AgriClassifyPage() {
     const classificationPromises = selectedFiles.map(async (file) => {
       try {
         const photoDataUri = await readFileAsDataURL(file);
-        const response: ClassificationResponse = await classifyImageAction({ photoDataUri, fileId: file.id });
         
-        // Update specific result
+        const requestPayload: ClassificationRequest = {
+          photoDataUri,
+          fileId: file.id,
+          // Pass custom examples if they exist
+          customExamples: customExamples.length > 0 ? customExamples : undefined,
+        };
+        
+        const response: ClassificationResponse = await classifyImageAction(requestPayload);
+        
         setClassificationResults(prev =>
           prev.map(r => r.id === response.fileId ? {
             ...r,
@@ -100,20 +115,19 @@ export default function AgriClassifyPage() {
         if (response.error) {
            toast({ title: `Error classifying ${file.name}`, description: response.error, variant: "destructive" });
         }
-        return response; // Return for summary processing
+        return response;
       } catch (error: any) {
         const errorMessage = error.message || "Failed to read or process file.";
         setClassificationResults(prev =>
           prev.map(r => r.id === file.id ? { ...r, error: errorMessage, isLoading: false } : r)
         );
         toast({ title: `Error processing ${file.name}`, description: errorMessage, variant: "destructive" });
-        return { fileId: file.id, error: errorMessage }; // Ensure it returns something for the summary part
+        return { fileId: file.id, error: errorMessage };
       }
     });
 
     const individualResults = await Promise.all(classificationPromises);
     
-    // Prepare data for summary
     const successfulClassifications: AIClassificationResult[] = individualResults
       .filter(res => !res.error && res.productName && res.confidence !== undefined)
       .map(res => ({
@@ -144,7 +158,6 @@ export default function AgriClassifyPage() {
         setSummaryError("Not enough successful classifications to generate a meaningful batch summary.");
     }
     
-    // Check if any are still processing (shouldn't be, but as a safeguard)
     const anyStillLoading = classificationResults.some(r => r.isLoading);
     if (!anyStillLoading) {
       setIsProcessingAny(false);
@@ -157,8 +170,7 @@ export default function AgriClassifyPage() {
         toast({ title: "Classification Complete", description: "Results are displayed below." });
     }
 
-
-  }, [selectedFiles, toast]);
+  }, [selectedFiles, toast, customExamples, classificationResults]); // Added customExamples & classificationResults to dependency array
 
 
   return (
@@ -169,9 +181,15 @@ export default function AgriClassifyPage() {
         <AlertDescription className="text-foreground/80">
           Leverage the power of AI to automatically classify your agricultural produce. 
           Simply upload images and let our system identify them for you. 
-          This demo showcases integration with GenAI for intelligent image analysis.
+          Optionally, define custom produce types with example images to guide the AI for more specific classifications.
         </AlertDescription>
       </Alert>
+
+      <CustomExamplesManager
+        customExamples={customExamples}
+        onCustomExamplesChange={handleCustomExamplesChange}
+        isProcessing={isProcessingAny}
+      />
 
       <ImageUploader
         onFilesSelected={handleFilesSelected}

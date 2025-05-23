@@ -17,9 +17,9 @@ import {z} from 'genkit';
 
 const CustomExampleSchema = z.object({
   label: z.string().describe('The custom label for this type of produce.'),
-  exampleImageUris: z.array(z.string().url().describe(
+  exampleImageUris: z.array(z.string().describe( // No .url() as it's a data URI
     "A data URI of an example image for this custom label. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
-  )).min(1).describe('A list of at least one example image (data URIs) for this custom label.'),
+  )).min(1).max(10).describe('A list of 1 to 10 example images (data URIs) for this custom label.'),
 });
 export type CustomExample = z.infer<typeof CustomExampleSchema>;
 
