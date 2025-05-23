@@ -1,3 +1,4 @@
+
 'use server';
 import { classifyProduceImage, type ClassifyProduceImageInput, type ClassifyProduceImageOutput } from '@/ai/flows/classify-produce-image';
 import { summarizeClassificationResults, type ClassificationResult as AIClassificationResult, type SummarizeClassificationResultsInput } from '@/ai/flows/summarize-classification-results';
@@ -10,7 +11,8 @@ export interface ClassificationRequest {
 
 export interface ClassificationResponse {
   fileId: string;
-  productName?: string;
+  isProduce: boolean;
+  productName?: string; // This will be the 'classification' field from AI
   confidence?: number;
   error?: string;
 }
@@ -33,15 +35,16 @@ export async function classifyImageAction(request: ClassificationRequest): Promi
     
     return {
       fileId: request.fileId,
-      productName: result.classification,
+      isProduce: result.isProduce,
+      productName: result.classification, // 'classification' from AI is now 'productName' here
       confidence: result.confidence,
     };
   } catch (e: any) {
     console.error("Error classifying image:", e);
-    // Try to provide a more specific error message if possible from the AI flow
     const errorMessage = e?.message || "Failed to classify image. The AI model might be unable to process this image or there was a connection issue.";
     return {
       fileId: request.fileId,
+      isProduce: false, // Default to false on error
       error: errorMessage,
     };
   }
@@ -49,7 +52,7 @@ export async function classifyImageAction(request: ClassificationRequest): Promi
 
 export async function summarizeResultsAction(input: AIClassificationResult[]): Promise<{ summary?: string; error?: string }> {
   if (!input || input.length === 0) {
-    return { summary: "No results available to summarize." };
+    return { summary: "Không có kết quả phù hợp để tóm tắt." }; // Updated message
   }
   try {
     const summarizationInput: SummarizeClassificationResultsInput = { classificationResults: input };
@@ -60,3 +63,4 @@ export async function summarizeResultsAction(input: AIClassificationResult[]): P
     return { error: e.message || "Failed to summarize results." };
   }
 }
+

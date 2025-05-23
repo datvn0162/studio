@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -5,11 +6,12 @@ import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
-import { Leaf, AlertTriangle, CheckCircle2, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { Leaf, AlertTriangle, CheckCircle2, ImageIcon, Loader2, HelpCircle } from 'lucide-react';
 
 interface ClassificationResultCardProps {
   imagePreviewUrl: string;
   imageName: string;
+  isProduce?: boolean;
   productName?: string;
   confidenceScore?: number;
   error?: string;
@@ -19,6 +21,7 @@ interface ClassificationResultCardProps {
 export default function ClassificationResultCard({
   imagePreviewUrl,
   imageName,
+  isProduce,
   productName,
   confidenceScore,
   error,
@@ -52,15 +55,23 @@ export default function ClassificationResultCard({
           {imageName}
         </CardTitle>
         
-        {error && !isLoading && (
+        {isLoading ? (
+          null // Loader is primarily in the image overlay, content area shows nothing extra or a small text
+        ) : error ? (
           <Alert variant="destructive" className="mt-2">
             <AlertTriangle className="h-4 w-4" />
             <AlertTitle>Lỗi phân loại</AlertTitle>
             <AlertDescription className="text-xs">{error}</AlertDescription>
           </Alert>
-        )}
-
-        {!error && !isLoading && productName && (
+        ) : isProduce === false ? (
+          <Alert variant="default" className="mt-2 bg-accent/10 border-accent/30 text-accent-foreground dark:bg-accent/20 dark:border-accent/40 dark:text-accent-foreground">
+            <HelpCircle className="h-4 w-4 text-accent" />
+            <AlertTitle>Không phải nông sản</AlertTitle>
+            <AlertDescription className="text-xs">
+              {productName || "Hình ảnh này không được xác định là một loại nông sản."}
+            </AlertDescription>
+          </Alert>
+        ) : isProduce === true && productName ? (
           <div className="space-y-2 mt-2">
             <div className="flex items-center gap-2">
               <Leaf className="h-5 w-5 text-primary" />
@@ -76,9 +87,7 @@ export default function ClassificationResultCard({
               </div>
             )}
           </div>
-        )}
-
-        {!error && !isLoading && !productName && (
+        ) : ( 
            <div className="text-center py-4 text-muted-foreground">
             <ImageIcon className="mx-auto h-8 w-8 mb-2" />
             <p>Chờ phân loại.</p>
@@ -96,7 +105,12 @@ export default function ClassificationResultCard({
             <AlertTriangle className="mr-1 h-3 w-3" />
             Thất bại
           </Badge>
-        ) : productName ? (
+        ) : isProduce === false ? (
+          <Badge variant="outline" className="border-accent text-accent bg-accent/10">
+            <HelpCircle className="mr-1 h-3 w-3" />
+            Không phải nông sản
+          </Badge>
+        ) : isProduce === true && productName ? (
           <Badge variant="default" className="bg-primary text-primary-foreground">
             <CheckCircle2 className="mr-1 h-3 w-3" />
             Đã phân loại
@@ -108,3 +122,4 @@ export default function ClassificationResultCard({
     </Card>
   );
 }
+

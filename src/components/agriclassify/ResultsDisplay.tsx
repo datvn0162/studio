@@ -1,3 +1,4 @@
+
 'use client';
 
 import ClassificationResultCard from './ClassificationResultCard';
@@ -9,6 +10,7 @@ export interface ClassificationDisplayResult {
   id: string;
   previewUrl: string;
   fileName: string;
+  isProduce?: boolean; // Added this field
   productName?: string;
   confidenceScore?: number;
   error?: string;
@@ -41,10 +43,13 @@ export default function ResultsDisplay({ results, summary, summaryError, isSumma
   }
 
   const hasMultipleResults = results.length > 1;
+  // Check if there are any actual produce results to summarize
+  const hasSummarizableResults = results.some(r => r.isProduce && !r.error && r.productName && r.productName !== "Không phải nông sản");
+
 
   return (
     <div className="mt-8 space-y-6">
-      {hasMultipleResults && (summary || summaryError || isSummarizing) && (
+      {hasMultipleResults && (summary || summaryError || isSummarizing) && hasSummarizableResults && (
         <Card className="shadow-lg">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -78,6 +83,7 @@ export default function ResultsDisplay({ results, summary, summaryError, isSumma
                   key={result.id}
                   imagePreviewUrl={result.previewUrl}
                   imageName={result.fileName}
+                  isProduce={result.isProduce}
                   productName={result.productName}
                   confidenceScore={result.confidenceScore}
                   error={result.error}
@@ -92,3 +98,4 @@ export default function ResultsDisplay({ results, summary, summaryError, isSumma
     </div>
   );
 }
+

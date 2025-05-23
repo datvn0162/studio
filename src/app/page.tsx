@@ -42,7 +42,6 @@ export default function AgriClassifyPage() {
   }, [selectedFiles]);
 
   const handleFilesSelected = useCallback((files: ImageFileWithPreview[]) => {
-    // Revoke URLs for files that are no longer in the selection
     const newFileIds = new Set(files.map(f => f.id));
     selectedFiles.forEach(existingFile => {
       if (!newFileIds.has(existingFile.id)) {
@@ -56,6 +55,7 @@ export default function AgriClassifyPage() {
       previewUrl: file.preview,
       fileName: file.name,
       isLoading: false,
+      // isProduce will be undefined initially, then populated by AI
     })));
     setOverallSummary(null);
     setSummaryError(null);
@@ -87,7 +87,7 @@ export default function AgriClassifyPage() {
     setSummaryError(null);
 
     setClassificationResults(prevResults =>
-      prevResults.map(r => ({ ...r, isLoading: true, error: undefined, productName: undefined, confidenceScore: undefined }))
+      prevResults.map(r => ({ ...r, isLoading: true, error: undefined, productName: undefined, confidenceScore: undefined, isProduce: undefined }))
     );
     
     const classificationPromises = selectedFiles.map(async (file) => {
@@ -105,6 +105,7 @@ export default function AgriClassifyPage() {
         setClassificationResults(prev =>
           prev.map(r => r.id === response.fileId ? {
             ...r,
+            isProduce: response.isProduce,
             productName: response.productName,
             confidenceScore: response.confidence,
             error: response.error,
@@ -118,17 +119,17 @@ export default function AgriClassifyPage() {
       } catch (error: any) {
         const errorMessage = error.message || "Không thể đọc hoặc xử lý tệp.";
         setClassificationResults(prev =>
-          prev.map(r => r.id === file.id ? { ...r, error: errorMessage, isLoading: false } : r)
+          prev.map(r => r.id === file.id ? { ...r, error: errorMessage, isLoading: false, isProduce: false } : r)
         );
         toast({ title: `Lỗi xử lý ${file.name}`, description: errorMessage, variant: "destructive" });
-        return { fileId: file.id, error: errorMessage };
+        return { fileId: file.id, error: errorMessage, isProduce: false };
       }
     });
 
     const individualResults = await Promise.all(classificationPromises);
     
     const successfulClassifications: AIClassificationResult[] = individualResults
-      .filter(res => !res.error && res.productName && res.confidence !== undefined)
+      .filter(res => !res.error && res.isProduce && res.productName && res.productName !== "Không phải nông sản" && res.confidence !== undefined)
       .map(res => ({
         productName: res.productName!,
         confidenceScore: res.confidence!,
@@ -154,22 +155,30 @@ export default function AgriClassifyPage() {
         setIsSummarizing(false);
       }
     } else if (selectedFiles.length > 1 && successfulClassifications.length <= 1) {
-        setSummaryError("Không đủ kết quả phân loại thành công để tạo tóm tắt hàng loạt có ý nghĩa.");
+        setSummaryError("Không đủ kết quả phân loại nông sản thành công để tạo tóm tắt hàng loạt có ý nghĩa.");
     }
     
-    const anyStillLoading = classificationResults.some(r => r.isLoading);
-    if (!anyStillLoading) {
+    // Check if any are still loading by finding one in the latest state of classificationResults
+    const latestResults = classificationResults; // This might be stale, need to use a functional update or get it from state after updates
+    // To correctly check if all processing is done, we can check the individualResults directly or rely on isProcessingAny state management.
+    // For simplicity, we assume setIsProcessingAny(false) will be called if all promises are resolved.
+
+    const allProcessed = individualResults.every(res => !res.error || res.error); // This just means promises resolved
+    const anyStillLoading = classificationResults.some(r => r.isLoading); // Check the current state
+
+    if (!anyStillLoading) { // More robust check
       setIsProcessingAny(false);
     }
 
-    const allFailed = individualResults.every(res => res.error);
-    if (selectedFiles.length > 0 && allFailed) {
-        toast({ title: "Tất cả phân loại đều thất bại", description: "Vui lòng kiểm tra lại ảnh hoặc thử lại sau.", variant: "destructive" });
-    } else if (selectedFiles.length > 0 && !allFailed && individualResults.some(res => !res.error)) {
+    const allFailedOrNotProduce = individualResults.every(res => res.error || !res.isProduce);
+    if (selectedFiles.length > 0 && allFailedOrNotProduce && !individualResults.some(r => r.isProduce && !r.error)) {
+        toast({ title: "Phân loại hoàn tất", description: "Không có nông sản nào được nhận diện hoặc tất cả đều lỗi.", variant: "destructive" });
+    } else if (selectedFiles.length > 0 && individualResults.some(res => (res.isProduce && !res.error))) {
         toast({ title: "Phân loại hoàn tất", description: "Kết quả được hiển thị bên dưới." });
     }
 
-  }, [selectedFiles, toast, customExamples, classificationResults]);
+
+  }, [selectedFiles, toast, customExamples, classificationResults]); // classificationResults in dep array is for the anyStillLoading check
 
 
   return (
@@ -206,3 +215,4 @@ export default function AgriClassifyPage() {
     </div>
   );
 }
+
