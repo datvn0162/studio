@@ -5,6 +5,7 @@ import { summarizeClassificationResults, type ClassificationResult as AIClassifi
 export interface ClassificationRequest {
   photoDataUri: string;
   fileId: string; 
+  customExamples?: ClassifyProduceImageInput['customExamples']; // Optional custom examples
 }
 
 export interface ClassificationResponse {
@@ -19,7 +20,17 @@ export async function classifyImageAction(request: ClassificationRequest): Promi
     if (!request.photoDataUri.startsWith('data:image/')) {
       throw new Error('Invalid data URI format. Ensure it includes a MIME type (e.g., data:image/jpeg;base64,...).');
     }
-    const result: ClassifyProduceImageOutput = await classifyProduceImage({ photoDataUri: request.photoDataUri });
+
+    const aiInput: ClassifyProduceImageInput = { 
+      photoDataUri: request.photoDataUri 
+    };
+
+    if (request.customExamples && request.customExamples.length > 0) {
+      aiInput.customExamples = request.customExamples;
+    }
+
+    const result: ClassifyProduceImageOutput = await classifyProduceImage(aiInput);
+    
     return {
       fileId: request.fileId,
       productName: result.classification,
